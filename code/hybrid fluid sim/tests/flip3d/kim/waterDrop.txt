@@ -1,0 +1,240 @@
+Begin updating frame: 0 timeIntervalInSeconds: 0.0166667 (1/60) seconds
+End updating frame (took 2.01036 seconds)
+Begin updating frame: 1 timeIntervalInSeconds: 0.0166667 (1/60) seconds
+End updating frame (took 1.80549 seconds)
+Begin updating frame: 2 timeIntervalInSeconds: 0.0166667 (1/60) seconds
+End updating frame (took 1.09868 seconds)
+Begin updating frame: 3 timeIntervalInSeconds: 0.0166667 (1/60) seconds
+End updating frame (took 1.10342 seconds)
+Begin updating frame: 4 timeIntervalInSeconds: 0.0166667 (1/60) seconds
+End updating frame (took 0.984539 seconds)
+Begin updating frame: 5 timeIntervalInSeconds: 0.0166667 (1/60) seconds
+End updating frame (took 0.975126 seconds)
+Begin updating frame: 6 timeIntervalInSeconds: 0.0166667 (1/60) seconds
+End updating frame (took 1.03571 seconds)
+Begin updating frame: 7 timeIntervalInSeconds: 0.0166667 (1/60) seconds
+End updating frame (took 0.96946 seconds)
+Begin updating frame: 8 timeIntervalInSeconds: 0.0166667 (1/60) seconds
+End updating frame (took 1.00541 seconds)
+Begin updating frame: 9 timeIntervalInSeconds: 0.0166667 (1/60) seconds
+End updating frame (took 0.95531 seconds)
+Begin updating frame: 10 timeIntervalInSeconds: 0.0166667 (1/60) seconds
+End updating frame (took 1.02425 seconds)
+Begin updating frame: 11 timeIntervalInSeconds: 0.0166667 (1/60) seconds
+End updating frame (took 1.05989 seconds)
+Begin updating frame: 12 timeIntervalInSeconds: 0.0166667 (1/60) seconds
+End updating frame (took 0.886545 seconds)
+Begin updating frame: 13 timeIntervalInSeconds: 0.0166667 (1/60) seconds
+End updating frame (took 1.10244 seconds)
+Begin updating frame: 14 timeIntervalInSeconds: 0.0166667 (1/60) seconds
+End updating frame (took 1.08286 seconds)
+Begin updating frame: 15 timeIntervalInSeconds: 0.0166667 (1/60) seconds
+End updating frame (took 0.979901 seconds)
+Begin updating frame: 16 timeIntervalInSeconds: 0.0166667 (1/60) seconds
+End updating frame (took 1.01499 seconds)
+Begin updating frame: 17 timeIntervalInSeconds: 0.0166667 (1/60) seconds
+End updating frame (took 1.05442 seconds)
+Begin updating frame: 18 timeIntervalInSeconds: 0.0166667 (1/60) seconds
+End updating frame (took 1.06573 seconds)
+Begin updating frame: 19 timeIntervalInSeconds: 0.0166667 (1/60) seconds
+End updating frame (took 0.950972 seconds)
+Begin updating frame: 20 timeIntervalInSeconds: 0.0166667 (1/60) seconds
+End updating frame (took 1.07411 seconds)
+Begin updating frame: 21 timeIntervalInSeconds: 0.0166667 (1/60) seconds
+End updating frame (took 1.02931 seconds)
+Begin updating frame: 22 timeIntervalInSeconds: 0.0166667 (1/60) seconds
+End updating frame (took 0.947161 seconds)
+Begin updating frame: 23 timeIntervalInSeconds: 0.0166667 (1/60) seconds
+End updating frame (took 0.970147 seconds)
+Begin updating frame: 24 timeIntervalInSeconds: 0.0166667 (1/60) seconds
+End updating frame (took 1.06035 seconds)
+Begin updating frame: 25 timeIntervalInSeconds: 0.0166667 (1/60) seconds
+End updating frame (took 0.998734 seconds)
+Begin updating frame: 26 timeIntervalInSeconds: 0.0166667 (1/60) seconds
+End updating frame (took 0.909297 seconds)
+Begin updating frame: 27 timeIntervalInSeconds: 0.0166667 (1/60) seconds
+End updating frame (took 1.0798 seconds)
+Begin updating frame: 28 timeIntervalInSeconds: 0.0166667 (1/60) seconds
+End updating frame (took 1.014 seconds)
+Begin updating frame: 29 timeIntervalInSeconds: 0.0166667 (1/60) seconds
+End updating frame (took 0.981456 seconds)
+Begin updating frame: 30 timeIntervalInSeconds: 0.0166667 (1/60) seconds
+End updating frame (took 0.968583 seconds)
+Begin updating frame: 31 timeIntervalInSeconds: 0.0166667 (1/60) seconds
+End updating frame (took 1.0372 seconds)
+Begin updating frame: 32 timeIntervalInSeconds: 0.0166667 (1/60) seconds
+End updating frame (took 1.04486 seconds)
+Begin updating frame: 33 timeIntervalInSeconds: 0.0166667 (1/60) seconds
+End updating frame (took 0.924956 seconds)
+Begin updating frame: 34 timeIntervalInSeconds: 0.0166667 (1/60) seconds
+End updating frame (took 1.0399 seconds)
+Begin updating frame: 35 timeIntervalInSeconds: 0.0166667 (1/60) seconds
+End updating frame (took 1.07846 seconds)
+Begin updating frame: 36 timeIntervalInSeconds: 0.0166667 (1/60) seconds
+End updating frame (took 1.01181 seconds)
+Begin updating frame: 37 timeIntervalInSeconds: 0.0166667 (1/60) seconds
+End updating frame (took 0.966949 seconds)
+Begin updating frame: 38 timeIntervalInSeconds: 0.0166667 (1/60) seconds
+End updating frame (took 1.06049 seconds)
+Begin updating frame: 39 timeIntervalInSeconds: 0.0166667 (1/60) seconds
+End updating frame (took 1.04385 seconds)
+Begin updating frame: 40 timeIntervalInSeconds: 0.0166667 (1/60) seconds
+End updating frame (took 0.915433 seconds)
+Begin updating frame: 41 timeIntervalInSeconds: 0.0166667 (1/60) seconds
+End updating frame (took 1.02833 seconds)
+Begin updating frame: 42 timeIntervalInSeconds: 0.0166667 (1/60) seconds
+End updating frame (took 1.05087 seconds)
+Begin updating frame: 43 timeIntervalInSeconds: 0.0166667 (1/60) seconds
+End updating frame (took 1.00867 seconds)
+Begin updating frame: 44 timeIntervalInSeconds: 0.0166667 (1/60) seconds
+End updating frame (took 0.959981 seconds)
+Begin updating frame: 45 timeIntervalInSeconds: 0.0166667 (1/60) seconds
+End updating frame (took 1.02937 seconds)
+Begin updating frame: 46 timeIntervalInSeconds: 0.0166667 (1/60) seconds
+End updating frame (took 0.977979 seconds)
+Begin updating frame: 47 timeIntervalInSeconds: 0.0166667 (1/60) seconds
+End updating frame (took 0.955386 seconds)
+Begin updating frame: 48 timeIntervalInSeconds: 0.0166667 (1/60) seconds
+End updating frame (took 0.982337 seconds)
+Begin updating frame: 49 timeIntervalInSeconds: 0.0166667 (1/60) seconds
+End updating frame (took 1.06293 seconds)
+Begin updating frame: 50 timeIntervalInSeconds: 0.0166667 (1/60) seconds
+End updating frame (took 1.06965 seconds)
+Begin updating frame: 51 timeIntervalInSeconds: 0.0166667 (1/60) seconds
+End updating frame (took 0.964559 seconds)
+Begin updating frame: 52 timeIntervalInSeconds: 0.0166667 (1/60) seconds
+End updating frame (took 1.02421 seconds)
+Begin updating frame: 53 timeIntervalInSeconds: 0.0166667 (1/60) seconds
+End updating frame (took 1.02784 seconds)
+Begin updating frame: 54 timeIntervalInSeconds: 0.0166667 (1/60) seconds
+End updating frame (took 1.06784 seconds)
+Begin updating frame: 55 timeIntervalInSeconds: 0.0166667 (1/60) seconds
+End updating frame (took 0.982644 seconds)
+Begin updating frame: 56 timeIntervalInSeconds: 0.0166667 (1/60) seconds
+End updating frame (took 1.02988 seconds)
+Begin updating frame: 57 timeIntervalInSeconds: 0.0166667 (1/60) seconds
+End updating frame (took 1.06686 seconds)
+Begin updating frame: 58 timeIntervalInSeconds: 0.0166667 (1/60) seconds
+End updating frame (took 0.997005 seconds)
+Begin updating frame: 59 timeIntervalInSeconds: 0.0166667 (1/60) seconds
+End updating frame (took 1.11341 seconds)
+Begin updating frame: 60 timeIntervalInSeconds: 0.0166667 (1/60) seconds
+End updating frame (took 1.12842 seconds)
+Begin updating frame: 61 timeIntervalInSeconds: 0.0166667 (1/60) seconds
+End updating frame (took 0.95465 seconds)
+Begin updating frame: 62 timeIntervalInSeconds: 0.0166667 (1/60) seconds
+End updating frame (took 1.11098 seconds)
+Begin updating frame: 63 timeIntervalInSeconds: 0.0166667 (1/60) seconds
+End updating frame (took 1.05954 seconds)
+Begin updating frame: 64 timeIntervalInSeconds: 0.0166667 (1/60) seconds
+End updating frame (took 1.04801 seconds)
+Begin updating frame: 65 timeIntervalInSeconds: 0.0166667 (1/60) seconds
+End updating frame (took 1.05222 seconds)
+Begin updating frame: 66 timeIntervalInSeconds: 0.0166667 (1/60) seconds
+End updating frame (took 1.06767 seconds)
+Begin updating frame: 67 timeIntervalInSeconds: 0.0166667 (1/60) seconds
+End updating frame (took 1.12867 seconds)
+Begin updating frame: 68 timeIntervalInSeconds: 0.0166667 (1/60) seconds
+End updating frame (took 0.90458 seconds)
+Begin updating frame: 69 timeIntervalInSeconds: 0.0166667 (1/60) seconds
+End updating frame (took 1.07765 seconds)
+Begin updating frame: 70 timeIntervalInSeconds: 0.0166667 (1/60) seconds
+End updating frame (took 1.11526 seconds)
+Begin updating frame: 71 timeIntervalInSeconds: 0.0166667 (1/60) seconds
+End updating frame (took 1.00113 seconds)
+Begin updating frame: 72 timeIntervalInSeconds: 0.0166667 (1/60) seconds
+End updating frame (took 1.07702 seconds)
+Begin updating frame: 73 timeIntervalInSeconds: 0.0166667 (1/60) seconds
+End updating frame (took 1.07118 seconds)
+Begin updating frame: 74 timeIntervalInSeconds: 0.0166667 (1/60) seconds
+End updating frame (took 1.08982 seconds)
+Begin updating frame: 75 timeIntervalInSeconds: 0.0166667 (1/60) seconds
+End updating frame (took 0.991983 seconds)
+Begin updating frame: 76 timeIntervalInSeconds: 0.0166667 (1/60) seconds
+End updating frame (took 1.10129 seconds)
+Begin updating frame: 77 timeIntervalInSeconds: 0.0166667 (1/60) seconds
+End updating frame (took 1.06269 seconds)
+Begin updating frame: 78 timeIntervalInSeconds: 0.0166667 (1/60) seconds
+End updating frame (took 0.978678 seconds)
+Begin updating frame: 79 timeIntervalInSeconds: 0.0166667 (1/60) seconds
+End updating frame (took 1.04541 seconds)
+Begin updating frame: 80 timeIntervalInSeconds: 0.0166667 (1/60) seconds
+End updating frame (took 1.05439 seconds)
+Begin updating frame: 81 timeIntervalInSeconds: 0.0166667 (1/60) seconds
+End updating frame (took 1.13918 seconds)
+Begin updating frame: 82 timeIntervalInSeconds: 0.0166667 (1/60) seconds
+End updating frame (took 1.00351 seconds)
+Begin updating frame: 83 timeIntervalInSeconds: 0.0166667 (1/60) seconds
+End updating frame (took 1.12136 seconds)
+Begin updating frame: 84 timeIntervalInSeconds: 0.0166667 (1/60) seconds
+End updating frame (took 1.24571 seconds)
+Begin updating frame: 85 timeIntervalInSeconds: 0.0166667 (1/60) seconds
+End updating frame (took 1.33934 seconds)
+Begin updating frame: 86 timeIntervalInSeconds: 0.0166667 (1/60) seconds
+End updating frame (took 1.15203 seconds)
+Begin updating frame: 87 timeIntervalInSeconds: 0.0166667 (1/60) seconds
+End updating frame (took 1.07359 seconds)
+Begin updating frame: 88 timeIntervalInSeconds: 0.0166667 (1/60) seconds
+End updating frame (took 0.95103 seconds)
+Begin updating frame: 89 timeIntervalInSeconds: 0.0166667 (1/60) seconds
+End updating frame (took 1.02933 seconds)
+Begin updating frame: 90 timeIntervalInSeconds: 0.0166667 (1/60) seconds
+End updating frame (took 1.07541 seconds)
+Begin updating frame: 91 timeIntervalInSeconds: 0.0166667 (1/60) seconds
+End updating frame (took 1.08008 seconds)
+Begin updating frame: 92 timeIntervalInSeconds: 0.0166667 (1/60) seconds
+End updating frame (took 0.952244 seconds)
+Begin updating frame: 93 timeIntervalInSeconds: 0.0166667 (1/60) seconds
+End updating frame (took 1.07276 seconds)
+Begin updating frame: 94 timeIntervalInSeconds: 0.0166667 (1/60) seconds
+End updating frame (took 1.15009 seconds)
+Begin updating frame: 95 timeIntervalInSeconds: 0.0166667 (1/60) seconds
+End updating frame (took 0.997806 seconds)
+Begin updating frame: 96 timeIntervalInSeconds: 0.0166667 (1/60) seconds
+End updating frame (took 1.14877 seconds)
+Begin updating frame: 97 timeIntervalInSeconds: 0.0166667 (1/60) seconds
+End updating frame (took 1.26769 seconds)
+Begin updating frame: 98 timeIntervalInSeconds: 0.0166667 (1/60) seconds
+End updating frame (took 1.17902 seconds)
+Begin updating frame: 99 timeIntervalInSeconds: 0.0166667 (1/60) seconds
+End updating frame (took 1.05405 seconds)
+Begin updating frame: 100 timeIntervalInSeconds: 0.0166667 (1/60) seconds
+End updating frame (took 1.1056 seconds)
+Begin updating frame: 101 timeIntervalInSeconds: 0.0166667 (1/60) seconds
+End updating frame (took 1.14273 seconds)
+Begin updating frame: 102 timeIntervalInSeconds: 0.0166667 (1/60) seconds
+End updating frame (took 0.994671 seconds)
+Begin updating frame: 103 timeIntervalInSeconds: 0.0166667 (1/60) seconds
+End updating frame (took 1.12965 seconds)
+Begin updating frame: 104 timeIntervalInSeconds: 0.0166667 (1/60) seconds
+End updating frame (took 1.09352 seconds)
+Begin updating frame: 105 timeIntervalInSeconds: 0.0166667 (1/60) seconds
+End updating frame (took 1.06268 seconds)
+Begin updating frame: 106 timeIntervalInSeconds: 0.0166667 (1/60) seconds
+End updating frame (took 1.00872 seconds)
+Begin updating frame: 107 timeIntervalInSeconds: 0.0166667 (1/60) seconds
+End updating frame (took 1.11848 seconds)
+Begin updating frame: 108 timeIntervalInSeconds: 0.0166667 (1/60) seconds
+End updating frame (took 1.17628 seconds)
+Begin updating frame: 109 timeIntervalInSeconds: 0.0166667 (1/60) seconds
+End updating frame (took 0.953207 seconds)
+Begin updating frame: 110 timeIntervalInSeconds: 0.0166667 (1/60) seconds
+End updating frame (took 1.14718 seconds)
+Begin updating frame: 111 timeIntervalInSeconds: 0.0166667 (1/60) seconds
+End updating frame (took 1.12706 seconds)
+Begin updating frame: 112 timeIntervalInSeconds: 0.0166667 (1/60) seconds
+End updating frame (took 1.09563 seconds)
+Begin updating frame: 113 timeIntervalInSeconds: 0.0166667 (1/60) seconds
+End updating frame (took 1.05962 seconds)
+Begin updating frame: 114 timeIntervalInSeconds: 0.0166667 (1/60) seconds
+End updating frame (took 1.11565 seconds)
+Begin updating frame: 115 timeIntervalInSeconds: 0.0166667 (1/60) seconds
+End updating frame (took 1.08504 seconds)
+Begin updating frame: 116 timeIntervalInSeconds: 0.0166667 (1/60) seconds
+End updating frame (took 0.983258 seconds)
+Begin updating frame: 117 timeIntervalInSeconds: 0.0166667 (1/60) seconds
+End updating frame (took 1.10343 seconds)
+Begin updating frame: 118 timeIntervalInSeconds: 0.0166667 (1/60) seconds
+End updating frame (took 1.1582 seconds)
+Begin updating frame: 119 timeIntervalInSeconds: 0.0166667 (1/60) seconds
+End updating frame (took 0.998362 seconds)
