@@ -319,7 +319,8 @@ namespace cg
   GridSolver<D, real>::divergent(CellCenteredScalarGrid<D, real>& div, Ref<FaceCenteredGrid<D, real>> input)
   {
     auto N = size();
-    auto invH = 1.0f/input->gridSpacing().x;
+    auto invX = 1.0f / N.x;
+    auto invY = 1.0f / N.y;
     for (auto y = 1; y < N.y-1; y++)
     {
       for (auto x = 1; x < N.x-1; x++)
@@ -334,7 +335,7 @@ namespace cg
         debug("%.2f\n", up);
         debug("%.2f\n", down);*/
         
-        div[index] = -invH * (right - left + up - down);
+        div[index] = invX * (right - left) + invY * (up - down);
       }
     }
     applyBoundaryCondition(div);
@@ -346,6 +347,8 @@ namespace cg
   GridSolver<D, real>::poisson_solver(CellCenteredScalarGrid<D, real>& div, CellCenteredScalarGrid<D, real>& x0, double tol)
   {
     auto N = size();
+    auto invX = 1.0f / N.x;
+    auto invY = 1.0f / N.y;
     auto old = new CellCenteredScalarGrid<D, real>(_density->size(), _density->cellSize(), _density->dataOrigin());
     for (int i = 0; i < _maxIterPoisson; i++) {
       forEachIndex<D>(x0.size(), [&](const Index<D>& index) {
@@ -362,7 +365,7 @@ namespace cg
           debug("%.2f\n", x0[index + Index2(0, 1)]);
           debug("%.2f\n", x0[index + Index2(0, -1)]);
           debug("%.2f\n", div[index]);*/
-          x0[index] = div[index] + 0.25 * (x0[index + Index2(1, 0)] + x0[index + Index2(-1, 0)] + x0[index + Index2(0, 1)] + x0[index + Index2(0, -1)]);
+          x0[index] = 0.25 * (x0[index + Index2(1, 0)] + x0[index + Index2(-1, 0)] + x0[index + Index2(0, 1)] + x0[index + Index2(0, -1)] - div[index]);
           accum += abs((*old)[index] - x0[index]);
         }
       }
@@ -408,7 +411,7 @@ namespace cg
       }
     }
     //debug("[INFO] Pressure solver took %lld ms\n", s.time());
-    debug("max vel: %.3f\n", maxVel);
+    //debug("max vel: %.3f\n", maxVel);
 
     applyBoundaryCondition();
   }
@@ -555,20 +558,20 @@ namespace cg
     for (int i = 1; i <= N; i++)
     {
       _velocity->velocityAt<0>(Index2(1, i)) = 0;
-      _velocity->velocityAt<0>(Index2(N, i)) = 0;
+      _velocity->velocityAt<0>(Index2(N+1, i)) = 0;
 
       _velocity->velocityAt<1>(Index2(i, 1)) = 0;
-      _velocity->velocityAt<1>(Index2(i, N)) = 0;
+      _velocity->velocityAt<1>(Index2(i, N+1)) = 0;
 
-      _density->operator[](Index2(0, i)) = _density->operator[](Index2(1, i));
-      _density->operator[](Index2(N+1, i)) = _density->operator[](Index2(N, i));
-      _density->operator[](Index2(i, 0)) = _density->operator[](Index2(i, 1));
-      _density->operator[](Index2(i, N+1)) = _density->operator[](Index2(i, N));
+      (*_density)[Index2(0, i)] = (*_density)[Index2(1, i)];
+      (*_density)[Index2(N+1, i)] = (*_density)[Index2(N, i)];
+      (*_density)[Index2(i, 0)] = (*_density)[Index2(i, 1)];
+      (*_density)[Index2(i, N+1)] = (*_density)[Index2(i, N)];
     }
-    _density->operator[](Index2(0, 0)) = .5f* (_density->operator[](Index2(1, 0))+ _density->operator[](Index2(0, 1)));
-    _density->operator[](Index2(0, N+1)) = .5f * (_density->operator[](Index2(1, N+1)) + _density->operator[](Index2(0, N)));
-    _density->operator[](Index2(N+1, 0)) = .5f * (_density->operator[](Index2(N, 0)) + _density->operator[](Index2(N+1, 1)));
-    _density->operator[](Index2(N+1, N+1)) = .5f * (_density->operator[](Index2(N, N+1)) + _density->operator[](Index2(N+1, N)));
+    (*_density)[Index2(0, 0)] = .5f* ((*_density)[Index2(1, 0)]+ (*_density)[Index2(0, 1)]);
+    (*_density)[Index2(0, N+1)] = .5f * ((*_density)[Index2(1, N+1)] + (*_density)[Index2(0, N)]);
+    (*_density)[Index2(N+1, 0)] = .5f * ((*_density)[Index2(N, 0)] + (*_density)[Index2(N+1, 1)]);
+    (*_density)[Index2(N+1, N+1)] = .5f * ((*_density)[Index2(N, N+1)] + (*_density)[Index2(N+1, N)]);
   }
 
   template<size_t D, typename real>

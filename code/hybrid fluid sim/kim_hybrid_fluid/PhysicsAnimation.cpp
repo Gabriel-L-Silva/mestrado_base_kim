@@ -84,7 +84,8 @@ PhysicsAnimation::advanceFrame(const Frame& frame)
 
     int numberOfFrames = frame.index - _frame.index;
     for (auto i = 0; i < numberOfFrames; ++i) {
-      advanceTimeStep(frame.timeIntervalInSeconds);
+      if(frame.index != 0)
+        advanceTimeStep(frame.timeIntervalInSeconds);
     }
 
     _frame = frame;

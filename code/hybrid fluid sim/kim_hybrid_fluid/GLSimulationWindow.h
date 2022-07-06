@@ -160,6 +160,7 @@ namespace cg
 
     Index2 _source_pos = Index2{-1, -1};
     real _source_force = 1.0f;
+    int _force_range = 5;
     Index2 _force_pos = Index2{ -1, -1 };
     vec_type _force_dir;
 
@@ -332,6 +333,8 @@ namespace cg
     GLSimulationWindow<real>::gui()
   {
     ImGui::Begin("Simulation Controller");
+    ImGui::Text("Application average %.3f ms/frame (%.1f FPS)",
+      1000.0f / double(ImGui::GetIO().Framerate), double(ImGui::GetIO().Framerate));
     ImGui::Checkbox("Draw Solver Grid", &_drawGrid);
     ImGui::Checkbox("Draw Vectors", &_drawVectors);
     if (_ready)
@@ -343,7 +346,8 @@ namespace cg
       {
         _solver->advanceFrame(_frame++);
       }
-      ImGui::DragFloat("Source Force", (float*)&_source_force, 0.01f, 0.0f, 5.0f);
+      ImGui::DragFloat("Source Force", (float*)&_source_force, 0.11f, 0.0f, 50.0f);
+      ImGui::DragInt("Force Range", (int*)&_force_range, 0.1f);
     }
     else
     {
@@ -359,7 +363,6 @@ namespace cg
           ImGui::DragInt("Number of SubTimeSteps", (int*)&_numberOfFixedSubTimeSteps, 1.0f, 1, 10);
         }
         ImGui::DragInt("Grid Size", (int*)&_gridSize, 1.0f, 1, 200);
-        ImGui::InputInt("Max Number of Particles", (int*)&_numberOfParticles, 50, 200);
         ImGui::DragFloat2("Gravity", (float*)&_gravity, 0.2f);
         ImGui::DragFloat("Viscosity", (float*)&_viscosity, 0.01f, 0.0f, 1.0f);
       }
@@ -422,7 +425,6 @@ namespace cg
     auto l = "##" + std::to_string(id);
     ImGui::DragFloat(("Min" + l).c_str(), &config.min, 0.1f, 0.0f, 2.0f);
     ImGui::DragFloat(("Max" + l).c_str(), &config.max, 0.1f, 0.05f, 2.0f);
-    ImGui::DragFloat(("Particle Spacing" + l).c_str(), (float*)&config.particleSpacing, 0.001f, 1.0f / 200.0f, 0.2f);
 
     _bmin.x = math::clamp<real>(config.min, 0.0f, config.max);
     _bmin.y = math::clamp<real>(config.min, 0.0f, config.max);
@@ -452,27 +454,27 @@ namespace cg
     auto dens = _solver->density();
     if (_source_pos.x != -1 && _source_pos.y != -1)
     {
-      (*dens)[_source_pos] = math::clamp<real>((*dens)[_source_pos] + _source_force * 50 * _frame.timeIntervalInSeconds, 0, 1);
-      /*auto sampled = dens->sample(dens->dataPosition(_source_pos)-_solver->gridSpacing()*.5f);
-      debug("%.2f\n", sampled);*/
+      for (auto i = -_force_range; i <= _force_range; i++)
+      {
+        for (auto j = -_force_range; j <= _force_range; j++)
+        {
+          (*dens)[_source_pos + Index2(i,j)] = math::clamp<real>((*dens)[_source_pos + Index2(i, j)] + _source_force * 50 * _frame.timeIntervalInSeconds, 0, 1);
+          /*auto sampled = dens->sample(dens->dataPosition(_source_pos)-_solver->gridSpacing()*.5f);
+          debug("%.2f\n", sampled);*/
+        }
+      }
     }
     auto vel = _solver->velocity();
     if (_force_pos.x != -1 && _force_pos.y != -1)
     {
-      vel->velocityAt<0>(Index2{ _force_pos.x,_force_pos.y }) += (_force_dir * _source_force * _frame.timeIntervalInSeconds).x;
-      vel->velocityAt<1>(Index2{ _force_pos.x,_force_pos.y }) += (_force_dir * _source_force * _frame.timeIntervalInSeconds).y;
-
-      vel->velocityAt<0>(Index2{ _force_pos.x+1,_force_pos.y+1 }) += (_force_dir * _source_force * _frame.timeIntervalInSeconds).x;
-      vel->velocityAt<1>(Index2{ _force_pos.x+1,_force_pos.y+1 }) += (_force_dir * _source_force * _frame.timeIntervalInSeconds).y;
-
-      vel->velocityAt<0>(Index2{ _force_pos.x+1,_force_pos.y-1 }) += (_force_dir * _source_force * _frame.timeIntervalInSeconds).x;
-      vel->velocityAt<1>(Index2{ _force_pos.x+1,_force_pos.y-1 }) += (_force_dir * _source_force * _frame.timeIntervalInSeconds).y;
-
-      vel->velocityAt<0>(Index2{ _force_pos.x-1,_force_pos.y-1 }) += (_force_dir * _source_force * _frame.timeIntervalInSeconds).x;
-      vel->velocityAt<1>(Index2{ _force_pos.x-1,_force_pos.y-1 }) += (_force_dir * _source_force * _frame.timeIntervalInSeconds).y;
-
-      vel->velocityAt<0>(Index2{ _force_pos.x-1,_force_pos.y+1 }) += (_force_dir * _source_force * _frame.timeIntervalInSeconds).x;
-      vel->velocityAt<1>(Index2{ _force_pos.x-1,_force_pos.y+1 }) += (_force_dir * _source_force * _frame.timeIntervalInSeconds).y;
+      for (auto i = -_force_range; i <= _force_range; i++)
+      {
+        for (auto j = -_force_range; j <= _force_range; j++)
+        {
+          vel->velocityAt<0>(Index2{ _force_pos.x+i,_force_pos.y+j }) += (_force_dir * _source_force * _frame.timeIntervalInSeconds).x;
+          vel->velocityAt<1>(Index2{ _force_pos.x+i,_force_pos.y+j }) += (_force_dir * _source_force * _frame.timeIntervalInSeconds).y;
+        }
+      }
       /*auto sampled = dens->sample(dens->dataPosition(_source_pos)-_solver->gridSpacing()*.5f);
       debug("%.2f\n", sampled);*/
     }
@@ -548,25 +550,36 @@ namespace cg
     auto bounds = Bounds2f{ vec2f{_emitterConfigs[0].min -1.0f}, vec2f{_emitterConfigs[0].max- 1.0f} };
     auto gridSize = Index2{ Index2::base_type(_gridSize) };
     auto gridSpacing = _solver->gridSpacing();
-    cg::vec2f start{ bounds.min() };
+
+    cg::vec2f start{ bounds.min()-gridSpacing };
     start = m.transform(cg::vec4f{ start.x, start.y, 0.0f, 1.0f });
-    cg::vec2f end{ bounds.max().x, bounds.min().y };
+    cg::vec2f end{ bounds.max().x + gridSpacing.x, bounds.min().y - gridSpacing.y };
     end = m.transform(cg::vec4f{ end.x, end.y, 0.0f, 1.0f });
     auto color = cg::Color::red;
     color.a = 1;
-    graphics->setLineColor(color);
+    auto boundColor = cg::Color::yellow;
+    boundColor.a = 1;
+    graphics->setLineColor(boundColor);
 
-    for (int i = 0; i < gridSize.y + 1; ++i)
+    for (int i = 0; i <= gridSize.y + 2; ++i)
     {
+      if(i<=1 || i>=gridSize.y+1)
+        graphics->setLineColor(boundColor);
+      else
+        graphics->setLineColor(color);
       graphics->drawLine(start, end);
       start.y += gridSpacing.y;
       end.y = start.y;
     }
-    start = m.transform(cg::vec4f{ bounds.min().x, bounds.min().y, 0.0f, 1.0f });
-    end = { bounds.min().x, bounds.max().y };
+    start = m.transform(cg::vec4f{ bounds.min().x - gridSpacing.x, bounds.min().y - gridSpacing.y, 0.0f, 1.0f });
+    end = { bounds.min().x - gridSpacing.x, bounds.max().y + gridSpacing.y };
     end = m.transform(cg::vec4f{ end.x, end.y, 0.0f, 1.0f });
-    for (int i = 0; i < gridSize.x + 1; ++i)
+    for (int i = 0; i <= gridSize.x + 2; ++i)
     {
+      if (i <= 1 || i >= gridSize.y + 1)
+        graphics->setLineColor(boundColor);
+      else
+        graphics->setLineColor(color);
       graphics->drawLine(start, end);
       start.x += gridSpacing.x;
       end.x = start.x;
@@ -604,9 +617,9 @@ namespace cg
     auto uPos = grid->positionInSpace<0>();
     auto vPos = grid->positionInSpace<1>();
 
-    for (int i = 1; i <= gridSize.y; ++i)
+    for (int i = 1; i <= gridSize.y+1; ++i)
     {
-      for (int j = 1; j <= gridSize.x; ++j)
+      for (int j = 1; j <= gridSize.x+1; ++j)
       {
         auto idx = Index2{ i,j };
 

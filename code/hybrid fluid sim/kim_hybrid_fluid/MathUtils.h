@@ -84,10 +84,10 @@ gradient2(const Grid2<real>& grid, const Vector2<real>& spacing, Index2::base_ty
 {
   auto size = grid.size();
 
-  auto leftIndex  = Index2{ (i > 0) ? i - 1 : i, j };
-  auto rightIndex = Index2{ (i + 1 < size.x) ? i + 1 : i, j };
-  auto downIndex  = Index2{ i, (j > 0) ? j - 1 : j };
-  auto upIndex    = Index2{ i, (j < size.y) ? j - 1 : j };
+  auto leftIndex  = Index2{ i - 1, j };
+  auto rightIndex = Index2{ i + 1, j };
+  auto downIndex  = Index2{ i, j - 1 };
+  auto upIndex    = Index2{ i, j + 1};
 
   real left = grid[leftIndex];
   real right = grid[rightIndex];
