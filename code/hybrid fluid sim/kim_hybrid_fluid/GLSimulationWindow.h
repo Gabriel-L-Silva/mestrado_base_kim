@@ -95,6 +95,7 @@ namespace cg
     bool _paused{ true };
     bool _drawGrid{ false };
     bool _drawVectors{ false };
+    bool _drawTemp{ false };
     bool _enableColorMap{ false };
     double _radius = 0.005;
     vec3f camera{ 0.0f, 0.0f, 1.728524f };
@@ -102,7 +103,7 @@ namespace cg
     GLSL::Program _program;
     Reference<GLBuffer<vec_type>> _positions;
     Reference<GLBuffer<vec_type>> _velocities;
-    Reference<GLBuffer<real>> _alphas;
+    Reference<GLBuffer<vec4f>> _colors;
     GLuint _vao;
     GLuint _vbo;
     GLuint _ebo;
@@ -132,6 +133,7 @@ namespace cg
     void buildSolver();
     Index2 mouseToGridIndex();
     Index2 mouseToGridIndex(double, double);
+    void colorsToShader(std::vector<vec4f>& colors);
 
     enum class MoveBits
     {
@@ -144,7 +146,8 @@ namespace cg
     enum class DragBits
     {
       Source = 1,
-      Force = 2
+      Force = 2,
+      Temp = 3
     };
 
     Reference<GLGraphics2> _g2;
@@ -159,6 +162,7 @@ namespace cg
     bool mouseMoveEvent(double, double) override;
 
     Index2 _source_pos = Index2{-1, -1};
+    Index2 _temp_pos = Index2{ -1, -1 };
     real _source_force = 1.0f;
     int _force_range = 5;
     Index2 _force_pos = Index2{ -1, -1 };
@@ -225,7 +229,7 @@ namespace cg
 
     _positions = new GLBuffer<vec_type>(1);
     _velocities = new GLBuffer<vec_type>(1);
-    _alphas = new GLBuffer<real>(1);
+    _colors = new GLBuffer<vec4f>(1);
 
     auto glType = GL_FLOAT;
     if (std::is_same<real, double>::value)
@@ -237,11 +241,30 @@ namespace cg
     _velocities->bind();
     glVertexAttribPointer(1, 2, glType, GL_FALSE, 0, 0);
     glEnableVertexAttribArray(1);
-    _alphas->bind();
-    glVertexAttribPointer(2, 1, glType, GL_FALSE, 0, 0);
+    _colors->bind();
+    glVertexAttribPointer(2, 4, glType, GL_FALSE, 0, 0);
     glEnableVertexAttribArray(2);
 
     _emitterConfigs.push_back(EmitterConfig());
+  }
+
+
+  template<typename real>
+  inline void
+    GLSimulationWindow<real>::colorsToShader(std::vector<vec4f>& colors)
+  {
+    auto N = _solver->size().x;
+    _solver->updateTempMinMax();
+    auto min = _solver->minTemp();
+    auto max = _solver->maxTemp();
+    //normalize between 180~0
+    for (size_t i = 0; i < _colors->size(); i++)
+    {
+      auto norm = (min != max) && min!=math::Limits<real>::inf() ? (180 * (colors[i].x - min) / (max - min)): 0;
+      auto c = Color::HSV2RGB(norm, 1, 1);
+      c.a = colors[i].w;
+      colors[i] = c;
+    }
   }
 
   template<typename real>
@@ -258,6 +281,7 @@ namespace cg
       origin
       );
     auto dens = _solver->density();
+    auto temp = _solver->temperature();
     auto vel = _solver->velocity();
     auto n = _solver->size();
     auto N = n.x;
@@ -281,6 +305,7 @@ namespace cg
     _solver->setIsUsingFixedSubTimeSteps(!_useAdaptiveTimeStepping);
     _solver->setNumberOfSubTimeSteps(_numberOfFixedSubTimeSteps);
 
+    auto c_size = _solver->temperature()->size();
     auto d_size = _solver->density()->size();
     auto v_size = _solver->velocity()->size();
 
@@ -299,12 +324,12 @@ namespace cg
     _velocities->bind();
     _velocities->resize(v_size.x * v_size.y);
     
-    _alphas->bind();
-    _alphas->resize(d_size.x * d_size.y);
-    std::vector<real> alphas(d_size.x * d_size.y);
-    for (size_t i = 0; i < _alphas->size(); i++)
-      alphas[i] = (*dens)[Index2{ Index2::base_type(i / size.x), Index2::base_type(i % size.y) }];
-    _alphas->setData(alphas.data());
+    _colors->bind();
+    _colors->resize(d_size.x * d_size.y);
+    std::vector<vec4f> colors(d_size.x * d_size.y);
+    for (size_t i = 0; i < _colors->size(); i++)
+      colors[i].w = (*dens)[Index2{ Index2::base_type(i / size.x), Index2::base_type(i % size.y) }];
+    _colors->setData(colors.data());
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _ebo);
     std::vector<int> indices((d_size.x -1) * (d_size.y-1) * 6);
@@ -337,11 +362,17 @@ namespace cg
       1000.0f / double(ImGui::GetIO().Framerate), double(ImGui::GetIO().Framerate));
     ImGui::Checkbox("Draw Solver Grid", &_drawGrid);
     ImGui::Checkbox("Draw Vectors", &_drawVectors);
+    ImGui::Checkbox("Draw Temperature", &_drawTemp);
     if (_ready)
     {
       //ImGui::Text("Number of Particles: %ull", _solver->size.x*size.yparticleSystem().size());
       if (ImGui::Button("Pause"))
+      {
         _paused = !_paused;
+        _force_pos = Index2{ -1,-1 };
+        _source_pos = Index2{ -1,-1 };
+        _temp_pos = Index2{ -1,-1 };
+      }
       if (ImGui::Button("Advance"))
       {
         _solver->advanceFrame(_frame++);
@@ -464,6 +495,17 @@ namespace cg
         }
       }
     }
+    auto temp = _solver->temperature();
+    if (_temp_pos.x != -1 && _temp_pos.y != -1)
+    {
+      for (auto i = -_force_range; i <= _force_range; i++)
+      {
+        for (auto j = -_force_range; j <= _force_range; j++)
+        {
+          (*temp)[_temp_pos + Index2(i, j)] = (*temp)[_temp_pos + Index2(i, j)] + _source_force * 50 * _frame.timeIntervalInSeconds;
+        }
+      }
+    }
     auto vel = _solver->velocity();
     if (_force_pos.x != -1 && _force_pos.y != -1)
     {
@@ -485,18 +527,27 @@ namespace cg
     _program.use();
     glBindVertexArray(_vao);
     
-    _alphas->bind();
     auto size = dens->size();
-    std::vector<real> alphas(size.x * size.y);
-    for (size_t i = 0; i < _alphas->size(); i++)
+    _colors->bind();
+    std::vector<vec4f> colors(size.x * size.y);
+    for (size_t i = 0; i < _colors->size(); i++)
     {
-      //if (i == _alphas->size() - 1)
-        //debug("aq");
-      //alphas[i] = dens->sample(dens->dataPosition(Index2{ Index2::base_type(i / size.x), Index2::base_type(i % size.y) }) - _solver->gridSpacing() * .5f);
-      alphas[i] = (*dens)[Index2{ Index2::base_type(i / size.x), Index2::base_type(i % size.y) }];
+      if (_drawTemp)
+      {
+        colors[i].x = (*temp)[Index2{ Index2::base_type(i / size.x), Index2::base_type(i % size.y) }];
+      }
+      else
+      {
+        colors[i].x = _particleColor.x;
+        colors[i].y = _particleColor.y;
+        colors[i].z = _particleColor.z;
+      }
+      colors[i].w = (*dens)[Index2{ Index2::base_type(i / size.x), Index2::base_type(i % size.y) }];
     }
-    _alphas->setData(alphas.data());
-    
+    if (_drawTemp)
+      colorsToShader(colors);
+    _colors->setData(colors.data());
+
     auto projectionMatrix = cg::mat4f::perspective(
       60,
       ((float)width()) / height(),
@@ -511,10 +562,10 @@ namespace cg
     );
     mvMatrix.invert();
 
-    _program.setUniform("use_color_map", _enableColorMap);
+    //_program.setUniform("use_color_map", _enableColorMap);
     _program.setUniformMat4("projectionMatrix", projectionMatrix);
     _program.setUniformMat4("mvMatrix", mvMatrix);
-    _program.setUniformVec4("color", _particleColor);
+    //_program.setUniformVec4("color", _particleColor);
 
     //glDrawArrays(GL_POINTS, 0, size.x * size.y);
     glDrawElements(GL_TRIANGLES, 6* size.x * size.y, GL_UNSIGNED_INT, 0);
@@ -727,7 +778,6 @@ namespace cg
   {
     if (ImGui::GetIO().WantCaptureMouse)
       return false;
-    (void)mods;
 
     auto active = actions == GLFW_PRESS;
 
@@ -740,13 +790,29 @@ namespace cg
       _dragFlags.enable(DragBits::Force, active);
     else if (button == GLFW_MOUSE_BUTTON_LEFT && actions == GLFW_RELEASE)
     {
-      _dragFlags.enable(DragBits::Source, false);
-      _source_pos = Index2(-1, -1);
+      if (mods == GLFW_MOD_ALT)
+      {
+        _dragFlags.enable(DragBits::Temp, false);
+        _temp_pos = Index2(-1, -1);
+      }
+      else
+      {
+        _dragFlags.enable(DragBits::Source, false);
+        _source_pos = Index2(-1, -1);
+      }
     }
     else if (button == GLFW_MOUSE_BUTTON_LEFT)
     {
-      _dragFlags.enable(DragBits::Source, active);
-      _source_pos = mouseToGridIndex();
+      if(mods == GLFW_MOD_ALT)
+      {
+        _dragFlags.enable(DragBits::Temp, active);
+        _temp_pos = mouseToGridIndex();
+      }
+      else 
+      {
+        _dragFlags.enable(DragBits::Source, active);
+        _source_pos = mouseToGridIndex();
+      }
     }
     if (_dragFlags)
       cursorPosition(_pivotX, _pivotY);
@@ -772,7 +838,12 @@ namespace cg
         // TODO: pan
         _source_pos = mouseToGridIndex(_mouseX, _mouseY);
       }
-      if (_dragFlags.isSet(DragBits::Force))
+      if (_dragFlags.isSet(DragBits::Temp))
+      {
+        _temp_pos = mouseToGridIndex(_mouseX, _mouseY);
+
+      }
+      else if (_dragFlags.isSet(DragBits::Force))
       {
         _force_pos = mouseToGridIndex(_pivotX, _pivotY);
         _force_dir = vec_type(-dx, dy);

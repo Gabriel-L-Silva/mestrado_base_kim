@@ -27,6 +27,7 @@ namespace cg
     {
       _velocity = new FaceCenteredGrid<D, real>(size+2, spacing, origin-spacing);
       _density = new CellCenteredScalarGrid<D, real>(size+2, spacing, origin-spacing);
+      _temperature = new CellCenteredScalarGrid<D, real>(size + 2, spacing, origin - spacing);
       _solverSize = Index2{ size.x,size.y };
       // use Adaptive SubTimeStepping
       this->setIsUsingFixedSubTimeSteps(false);
@@ -73,6 +74,10 @@ namespace cg
     // Returns grid size.
     const auto& size() const { return _solverSize; }
 
+    const auto& minTemp() const { return _minTemp; }
+
+    const auto& maxTemp() const { return _maxTemp; }
+
     // Returns grid cell spacing.
     const auto& gridSpacing() const { return _velocity->gridSpacing(); }
 
@@ -85,10 +90,14 @@ namespace cg
     // Returns the density field, represented by a CellCenteredScalarGrid
     const auto& density() const { return _density; }
 
+    // Returns the temperature field, represented by a CellCenteredScalarGrid
+    const auto& temperature() const { return _temperature; }
+
     const auto& collider() const { return _collider; }
 
     void setCollider(Collider<D, real>* collider);
-
+    
+    void updateTempMinMax();
 
     /*const auto& emitter() const;
      TODO
@@ -120,8 +129,10 @@ namespace cg
     void advectDensity(Index2 idx, double timeInterval);
 
     void computeAdvection(double timeInterval, AdvectType type);
-   
+
     void advectVelocity(Index2 idx, double timeInterval);
+
+    void computeBuoyancy(double timeInterval);
 
     void computeSource(double timeInterval);
 
@@ -148,12 +159,16 @@ namespace cg
     Index2 _solverSize{ 0 , 0};
     vec _gravity{ real(0.0f), real(-9.8f) };
     real _viscosityCoefficient{ 0.0f };
+    real _densityBuoyancyFactor{ 0.1f };
+    real _temperatureBuoyancyFactor{ 0.1f };
     real _maxCfl{ 5.0f };
     int _maxIterPoisson{ 10 };
     int _closedDomainBoundaryFlag{ constants::directionAll };
+    float _minTemp{ math::Limits<real>::inf() }, _maxTemp{ 0.0f };
 
     Ref<FaceCenteredGrid<D, real>> _velocity;
     Ref<CellCenteredScalarGrid<D, real>> _density;
+    Ref<CellCenteredScalarGrid<D, real>> _temperature;
     Ref<Collider<D, real>> _collider;
     // grid Emitter TODO
 
@@ -232,7 +247,7 @@ namespace cg
 
     beginAdvanceTimeStep(timeInterval);
 
-    //computeExternalForces(timeInterval);
+    computeExternalForces(timeInterval);
 
     computeViscosity(timeInterval);//k=0, passthrough
 
@@ -240,7 +255,7 @@ namespace cg
 
     computeAdvection(timeInterval, AdvectType::Velocity);
 
-    //computePressure(timeInterval);
+    computePressure(timeInterval);
     
     endAdvanceTimeStep(timeInterval);
   }
@@ -289,7 +304,7 @@ namespace cg
   inline void
     GridSolver<D, real>::computeExternalForces(double timeInterval)
   {
-    computeGravity(timeInterval);
+    //computeBuoyancy(timeInterval);
   }
 
   template<size_t D, typename real>
@@ -478,6 +493,7 @@ namespace cg
     newPos.y = newPos.y > maxY ? maxY : newPos.y;
 
     (*_density)[idx] = _density->sample(newPos - gridSpacing() * .5f);
+    (*_temperature)[idx] = _temperature->sample(newPos - gridSpacing() * .5f);
   }
 
   template<size_t D, typename real>
@@ -494,6 +510,49 @@ namespace cg
       for (index.y = 1; index.y <= N; ++index.y)
         for (index.x = 1; index.x <= N; ++index.x)
           advectVelocity(index, timeInterval);
+
+    applyBoundaryCondition();
+  }
+
+  template<size_t D, typename real>
+  inline void
+    GridSolver<D, real>::updateTempMinMax()
+  {
+    forEachIndex<D>(_temperature->size(), [&](const Index<D>& index) {
+      auto t = (*_temperature)[index];
+      if (t < _minTemp)
+        _minTemp = t;
+      if (t > _maxTemp)
+        _maxTemp = t;
+      });
+  }
+  template<size_t D, typename real>
+  inline void
+    GridSolver<D, real>::computeBuoyancy(double timeInterval)
+  {
+    auto vPos = _velocity->positionInSpace<1>();
+    auto N = size().x;
+    auto Tamb = 0.0;
+    forEachIndex<D>(_temperature->size(), [&](const Index<D>& index) {
+      auto t = (*_temperature)[index];
+      if (t < _minTemp)
+        _minTemp = t;
+      if (t > _maxTemp)
+        _maxTemp = t;
+      Tamb += t;
+      });
+    Tamb /= N * N;
+
+    Index2 index;
+    for (index.y = 1; index.y <= N; ++index.y)
+    {
+      for (index.x = 1; index.x <= N; ++index.x)
+      {
+        auto pos = vPos(index);
+        _velocity->velocityAt<1>(index) += timeInterval * (_densityBuoyancyFactor * _density->sample(pos)
+          + _temperatureBuoyancyFactor * (_temperature->sample(pos) - Tamb));
+      }
+    }
 
     applyBoundaryCondition();
   }

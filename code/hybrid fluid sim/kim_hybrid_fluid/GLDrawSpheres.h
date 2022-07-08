@@ -6,15 +6,14 @@
   static const char* vertexShader = STRINGIFY(
   layout(location = 0) in vec2 position;
   layout(location = 1) in vec2 velocity;
-  layout(location = 2) in float alphas;
-  layout(location = 3) in float indices;
+  layout(location = 2) in vec4 colors;
 
-  uniform bool use_color_map = false;
+  //uniform bool use_color_map = false;
   uniform float radius;
   uniform mat4 mvMatrix;
   uniform mat4 projectionMatrix;
   uniform vec2 viewportSize;
-  uniform vec4 color;
+  //uniform vec4 color;
   out float vRadius;
   out vec4 gColor;
   out vec2 texCoord;
@@ -29,8 +28,8 @@
     vec2 s = viewportSize * v.xy / v.w;
 
     gl_PointSize = .25f *(s.x + s.y);
-    gColor = use_color_map ? color * min(length(velocity), 1.0f) : color;
-    gColor.a = alphas;
+    //gColor = use_color_map ? color * min(length(velocity), 1.0f) : color;
+    gColor = colors;
     gl_Position = projectionMatrix * p;
   }
   );
