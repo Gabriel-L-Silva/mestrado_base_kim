@@ -833,15 +833,15 @@ namespace cg
 
     if (dx != 0 || dy != 0)
     {
-      if (_dragFlags.isSet(DragBits::Source))
-      {
-        // TODO: pan
-        _source_pos = mouseToGridIndex(_mouseX, _mouseY);
-      }
       if (_dragFlags.isSet(DragBits::Temp))
       {
         _temp_pos = mouseToGridIndex(_mouseX, _mouseY);
 
+      }
+      else if (_dragFlags.isSet(DragBits::Source))
+      {
+        // TODO: pan
+        _source_pos = mouseToGridIndex(_mouseX, _mouseY);
       }
       else if (_dragFlags.isSet(DragBits::Force))
       {

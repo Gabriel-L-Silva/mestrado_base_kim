@@ -159,7 +159,7 @@ namespace cg
     Index2 _solverSize{ 0 , 0};
     vec _gravity{ real(0.0f), real(-9.8f) };
     real _viscosityCoefficient{ 0.0f };
-    real _densityBuoyancyFactor{ 0.1f };
+    real _densityBuoyancyFactor{ 0.005f };
     real _temperatureBuoyancyFactor{ 0.1f };
     real _maxCfl{ 5.0f };
     int _maxIterPoisson{ 10 };
@@ -304,7 +304,7 @@ namespace cg
   inline void
     GridSolver<D, real>::computeExternalForces(double timeInterval)
   {
-    //computeBuoyancy(timeInterval);
+    computeBuoyancy(timeInterval);
   }
 
   template<size_t D, typename real>
@@ -549,7 +549,7 @@ namespace cg
       for (index.x = 1; index.x <= N; ++index.x)
       {
         auto pos = vPos(index);
-        _velocity->velocityAt<1>(index) += timeInterval * (_densityBuoyancyFactor * _density->sample(pos)
+        _velocity->velocityAt<1>(index) += timeInterval * (_densityBuoyancyFactor * _density->sample(pos) +
           + _temperatureBuoyancyFactor * (_temperature->sample(pos) - Tamb));
       }
     }
