@@ -257,10 +257,10 @@ namespace cg
     _solver->updateTempMinMax();
     auto min = _solver->minTemp();
     auto max = _solver->maxTemp();
-    //normalize between 180~0
+    //normalize between 360~0
     for (size_t i = 0; i < _colors->size(); i++)
     {
-      auto norm = (min != max) && min!=math::Limits<real>::inf() ? (180 * (colors[i].x - min) / (max - min)): 0;
+      auto norm = (min != max) && min!=math::Limits<real>::inf() ? (180*(1-(colors[i].x - min) / (max - min)) + 45): 225;
       auto c = Color::HSV2RGB(norm, 1, 1);
       c.a = colors[i].w;
       colors[i] = c;
