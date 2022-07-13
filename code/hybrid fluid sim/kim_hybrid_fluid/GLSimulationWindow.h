@@ -11,6 +11,9 @@
 #include "ParticleEmitterSet.h"
 #include "Sphere.h"
 #include <math.h>
+#include "FreeImage.h"
+#include <filesystem>
+#include <set>
 
 namespace cg
 {
@@ -91,7 +94,8 @@ namespace cg
 
     using Base = GLRenderWindow2;
     float _scale{ 0.0f };
-
+    
+    bool _saveFrames{ true };
     bool _paused{ true };
     bool _drawGrid{ false };
     bool _drawVectors{ false };
@@ -114,6 +118,8 @@ namespace cg
     size_t _numberOfFixedSubTimeSteps = 5;
     size_t _gridSize{ 64 };
     float _viscosity = 0.0f;
+    float _densityFactor = 0.005f;
+    float _temperatureFactor = 0.01f;
     vec2f _gravity{ 0.0f, -9.8f };
     // emitters
     std::vector<EmitterConfig> _emitterConfigs;
@@ -134,7 +140,8 @@ namespace cg
     Index2 mouseToGridIndex();
     Index2 mouseToGridIndex(double, double);
     void colorsToShader(std::vector<vec4f>& colors);
-
+    void delete_dir_content(const std::filesystem::path& dir_path);
+    void saveFrame(int);
     enum class MoveBits
     {
       Left = 1,
@@ -153,10 +160,17 @@ namespace cg
     Reference<GLGraphics2> _g2;
     Flags<MoveBits> _moveFlags{};
     Flags<DragBits> _dragFlags{};
+    std::set<std::pair<int, int>> _tempSource;
+    std::set<std::pair<int, int>> _densSource;
+    bool _insertSource{ false };
+
     int _pivotX;
     int _pivotY;
     int _mouseX;
     int _mouseY;
+    std::filesystem::path PATH = std::filesystem::current_path() / ".." / ".." / ".." / "sim";
+    // Make the BYTE array, factor of 3 because it's RBG.
+    BYTE* _pixels = new BYTE[3 * width() * height()];
 
     bool mouseButtonInputEvent(int, int, int) override;
     bool mouseMoveEvent(double, double) override;
@@ -246,9 +260,18 @@ namespace cg
     glEnableVertexAttribArray(2);
 
     _emitterConfigs.push_back(EmitterConfig());
+
+    if (_saveFrames)
+      delete_dir_content(PATH);
   }
 
-
+  template<typename real>
+  inline void
+  GLSimulationWindow<real>::delete_dir_content(const std::filesystem::path& dir_path) {
+    for (auto& path : std::filesystem::directory_iterator(dir_path)) {
+      std::filesystem::remove_all(path);
+    }
+  }
   template<typename real>
   inline void
     GLSimulationWindow<real>::colorsToShader(std::vector<vec4f>& colors)
@@ -260,7 +283,7 @@ namespace cg
     //normalize between 360~0
     for (size_t i = 0; i < _colors->size(); i++)
     {
-      auto norm = (min != max) && min!=math::Limits<real>::inf() ? (180*(1-(colors[i].x - min) / (max - min)) + 45): 225;
+      auto norm = (min != max) && min!=math::Limits<real>::inf() ? (225*(1-(colors[i].x - min) / (max - min)) + 45): 270;
       auto c = Color::HSV2RGB(norm, 1, 1);
       c.a = colors[i].w;
       colors[i] = c;
@@ -299,7 +322,9 @@ namespace cg
 
     _solver->setGravity(vec_type{ _gravity });
     _solver->setViscosityCoefficient(_viscosity);
-
+    _solver->setDensityFactor(_densityFactor);
+    _solver->setTemperatureFactor(_temperatureFactor);
+    _solver->setSaveFrames(_saveFrames);
     _solver->advanceFrame(_frame++);
 
     _solver->setIsUsingFixedSubTimeSteps(!_useAdaptiveTimeStepping);
@@ -394,8 +419,9 @@ namespace cg
           ImGui::DragInt("Number of SubTimeSteps", (int*)&_numberOfFixedSubTimeSteps, 1.0f, 1, 10);
         }
         ImGui::DragInt("Grid Size", (int*)&_gridSize, 1.0f, 1, 200);
-        ImGui::DragFloat2("Gravity", (float*)&_gravity, 0.2f);
         ImGui::DragFloat("Viscosity", (float*)&_viscosity, 0.01f, 0.0f, 1.0f);
+        ImGui::DragFloat("Density Factor", (float*)&_densityFactor, 0.005f, 0.0f, 1.0f);
+        ImGui::DragFloat("Temperature Factor", (float*)&_temperatureFactor, 0.005f, 0.0f, 1.0f);
       }
       if (ImGui::CollapsingHeader("Particle Emmiter"))
       {
@@ -406,6 +432,7 @@ namespace cg
         }
         ImGui::ColorEdit3("Particles Color", (float*)&_particleColor);
       }
+      ImGui::Checkbox("Save Frames", &_saveFrames);
       if (_emitterConfigs.size() > 0)
         if (ImGui::Button("Build Solver"))
           buildSolver();
@@ -471,6 +498,24 @@ namespace cg
     ImGui::DragFloat(("Particle Spacing" + l).c_str(), (float*)&config.particleSpacing, 0.001f, 1.0f / 200.0f, 0.2f);
   }
 
+
+  template <typename real>
+  inline void
+    GLSimulationWindow<real>::saveFrame(int frame)
+  {
+    auto w = width();
+    auto h = height();
+   
+    glReadPixels(0, 0, w, h, GL_RGB, GL_UNSIGNED_BYTE, _pixels);
+
+    // Convert to FreeImage format & save to file
+    FIBITMAP* image = FreeImage_ConvertFromRawBits(_pixels, w, h, 3 * w, 24, 0x0000FF, 0xFF0000, 0x00FF00, false);
+    auto filename = ((PATH / "frame_").string() + std::to_string(frame) + ".bmp");
+    FreeImage_Save(FIF_BMP, image, filename.c_str(), 0);
+
+    // Free resources
+    FreeImage_Unload(image);
+  }
   template <typename real>
   inline void
     GLSimulationWindow<real>::renderScene()
@@ -485,11 +530,18 @@ namespace cg
     auto dens = _solver->density();
     if (_source_pos.x != -1 && _source_pos.y != -1)
     {
+      if (_insertSource)
+      {
+        _densSource.insert(std::pair<int,int>(_source_pos.x, _source_pos.y));
+        _insertSource = false;
+      }
       for (auto i = -_force_range; i <= _force_range; i++)
       {
         for (auto j = -_force_range; j <= _force_range; j++)
         {
           (*dens)[_source_pos + Index2(i,j)] = math::clamp<real>((*dens)[_source_pos + Index2(i, j)] + _source_force * 50 * _frame.timeIntervalInSeconds, 0, 1);
+          for (auto it = _densSource.begin(); it != _densSource.end(); ++it)
+            (*dens)[Index2(it->first,it->second) + Index2(i, j)] = math::clamp<real>((*dens)[Index2(it->first, it->second) + Index2(i, j)] + _source_force * 50 * _frame.timeIntervalInSeconds, 0, 1);
           /*auto sampled = dens->sample(dens->dataPosition(_source_pos)-_solver->gridSpacing()*.5f);
           debug("%.2f\n", sampled);*/
         }
@@ -498,13 +550,21 @@ namespace cg
     auto temp = _solver->temperature();
     if (_temp_pos.x != -1 && _temp_pos.y != -1)
     {
+      if (_insertSource)
+      {
+        _tempSource.insert(std::pair<int, int>(_source_pos.x, _source_pos.y));
+        _insertSource = false;
+      }
       for (auto i = -_force_range; i <= _force_range; i++)
       {
         for (auto j = -_force_range; j <= _force_range; j++)
         {
           (*temp)[_temp_pos + Index2(i, j)] = (*temp)[_temp_pos + Index2(i, j)] + _source_force * 50 * _frame.timeIntervalInSeconds;
+          for (auto it = _tempSource.begin(); it != _tempSource.end(); ++it)
+            (*temp)[Index2(it->first, it->second) + Index2(i, j)] = (*temp)[Index2(it->first, it->second) + Index2(i, j)] + _source_force * 50 * _frame.timeIntervalInSeconds;
         }
       }
+      
     }
     auto vel = _solver->velocity();
     if (_force_pos.x != -1 && _force_pos.y != -1)
@@ -522,7 +582,11 @@ namespace cg
     }
 
     if (!_paused)
+    {
       _solver->advanceFrame(_frame++);
+      if(_saveFrames)
+        saveFrame(_frame.index);
+    }
 
     _program.use();
     glBindVertexArray(_vao);
@@ -803,15 +867,19 @@ namespace cg
     }
     else if (button == GLFW_MOUSE_BUTTON_LEFT)
     {
-      if(mods == GLFW_MOD_ALT)
+      if (mods&GLFW_MOD_SHIFT == GLFW_MOD_SHIFT)
+        _insertSource = true;
+      if(((mods&GLFW_MOD_ALT)>>2 == 0x0001) || (mods == GLFW_MOD_ALT))
       {
         _dragFlags.enable(DragBits::Temp, active);
         _temp_pos = mouseToGridIndex();
+        _source_pos = Index2(-1, -1);
       }
       else 
       {
         _dragFlags.enable(DragBits::Source, active);
         _source_pos = mouseToGridIndex();
+        _temp_pos = Index2(-1, -1);
       }
     }
     if (_dragFlags)

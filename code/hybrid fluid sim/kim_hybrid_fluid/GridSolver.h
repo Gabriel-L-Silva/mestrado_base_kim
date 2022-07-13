@@ -56,6 +56,14 @@ namespace cg
     // Sets the viscosity coefficient. Non-positive input will clamped to zero.
     void setViscosityCoefficient(real viscosity) { _viscosityCoefficient = math::max<real>(viscosity, 0.0f); }
 
+    // Sets the density buoyancy factor. Non-positive input will clamped to zero.
+    void setDensityFactor(real density) { _densityBuoyancyFactor = math::max<real>(density, 0.0f); }
+
+    // Sets the temperature buoyancy factor. Non-positive input will clamped to zero.
+    void setTemperatureFactor(real temp) { _temperatureBuoyancyFactor = math::max<real>(temp, 0.0f); }
+
+    void setSaveFrames(real save) { _saveFrames = save; }
+
     // Returns the CFL number from current velocity field for given time interval.
     real cfl(double timeInterval) const;
 
@@ -152,6 +160,8 @@ namespace cg
 
     void poisson_solver(CellCenteredScalarGrid<D, real>&, CellCenteredScalarGrid<D, real>&, double);
     
+    void diffusion_solver(CellCenteredScalarGrid<D, real>& x0, double timeInterval, float diff);
+    
     ScalarField<D, real>* colliderSdf() const;
 
     VectorField<D, real>* colliderVelocityField() const;
@@ -159,9 +169,10 @@ namespace cg
     Index2 _solverSize{ 0 , 0};
     vec _gravity{ real(0.0f), real(-9.8f) };
     real _viscosityCoefficient{ 0.0f };
-    real _densityBuoyancyFactor{ 0.005f };
-    real _temperatureBuoyancyFactor{ 0.1f };
+    real _densityBuoyancyFactor{ 0.0f };
+    real _temperatureBuoyancyFactor{ 0.005f };
     real _maxCfl{ 5.0f };
+    bool _saveFrames{ false };
     int _maxIterPoisson{ 10 };
     int _closedDomainBoundaryFlag{ constants::directionAll };
     float _minTemp{ math::Limits<real>::inf() }, _maxTemp{ 0.0f };
@@ -268,6 +279,8 @@ namespace cg
     // asserting min grid size
     assert(_velocity->size().min() > 0);
 #endif // _DEBUG
+    if (_saveFrames)
+      timeInterval = 1 / 60.0f;
 
     beginAdvanceTimeStep(timeInterval);
 
@@ -311,22 +324,22 @@ namespace cg
   inline void
     GridSolver<D, real>::computeViscosity(double timeInterval)
   {
-    Stopwatch s;
-    if (math::isPositive(_viscosityCoefficient))
-    {
-      s.start();
-      _diffusionSolver.solve(
-        _velocity,
-        _viscosityCoefficient,
-        timeInterval,
-        _velocity,
-        *colliderSdf(),
-        *fluidSdf()
-      );
-      //debug("[INFO] Viscosity solver took %lld ms\n", s.time());
-
-      applyBoundaryCondition();
-    }
+    //Stopwatch s;
+    //if (math::isPositive(_viscosityCoefficient))
+    //{
+    //  s.start();
+    //  _diffusionSolver.solve(
+    //    _velocity,
+    //    _viscosityCoefficient,
+    //    timeInterval,
+    //    _velocity,
+    //    *colliderSdf(),
+    //    *fluidSdf()
+    //  );
+    //  //debug("[INFO] Viscosity solver took %lld ms\n", s.time());
+    //diffusion_solver(*_temperature, timeInterval, _temperatureBuoyancyFactor);
+      //applyBoundaryCondition();
+    //}
   }
 
   template<size_t D, typename real>
@@ -355,7 +368,32 @@ namespace cg
     }
     applyBoundaryCondition(div);
   }
-
+  template<size_t D, typename real>
+  void
+    GridSolver<D, real>::diffusion_solver(CellCenteredScalarGrid<D, real>& x0, double timeInterval, float diff)
+  {
+    auto N = size();
+    auto invX = 1.0f / N.x;
+    auto invY = 1.0f / N.y;
+    
+    auto a = timeInterval * diff * N.x * N.y;
+    for (int i = 0; i < _maxIterPoisson; i++) {
+      for (auto y = 1; y < N.y - 1; y++)
+      {
+        for (auto x = 1; x < N.x - 1; x++)
+        {
+          auto index = Index2(x, y);
+          /*debug("%.2f\n", x0[index + Index2(1, 0)]);
+          debug("%.2f\n", x0[index + Index2(-1, 0)]);
+          debug("%.2f\n", x0[index + Index2(0, 1)]);
+          debug("%.2f\n", x0[index + Index2(0, -1)]);
+          debug("%.2f\n", div[index]);*/
+          x0[index] += a * (x0[index + Index2(1, 0)] + x0[index + Index2(-1, 0)] + x0[index + Index2(0, 1)] + x0[index + Index2(0, -1)]);
+          x0[index] /= (1 + 4 * a);
+        }
+      }
+    }
+  }
 
   template<size_t D, typename real>
   void 
@@ -518,6 +556,8 @@ namespace cg
   inline void
     GridSolver<D, real>::updateTempMinMax()
   {
+    _maxTemp = 0.0f;
+    _minTemp = math::Limits<real>::inf();
     forEachIndex<D>(_temperature->size(), [&](const Index<D>& index) {
       auto t = (*_temperature)[index];
       if (t < _minTemp)

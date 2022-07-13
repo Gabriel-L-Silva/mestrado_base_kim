@@ -8,7 +8,7 @@ using namespace cg;
 int
 main(int argc, char** argv)
 {
-  return cg::Application{ new GLSimulationWindow<float>("SimulationWindow", 721, 720) }.run(argc, argv);
+  return cg::Application{ new GLSimulationWindow<float>("SimulationWindow", 720, 720) }.run(argc, argv);
   /*Index2 size{ 3, 3 };
   auto backwardEuler = GridBackwardEulerDiffusionSolver<2, float, false>();
   Reference<FaceCenteredGrid<2, float>> grid = new FaceCenteredGrid<2, float>(size, vec2f{ 1.0f }, vec2f::null());
