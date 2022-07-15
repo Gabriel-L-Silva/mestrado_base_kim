@@ -170,7 +170,7 @@ namespace cg
     int _mouseY;
     std::filesystem::path PATH = std::filesystem::current_path() / ".." / ".." / ".." / "sim";
     // Make the BYTE array, factor of 3 because it's RBG.
-    BYTE* _pixels = new BYTE[3 * width() * height()];
+    GLubyte* _pixels = new GLubyte[3 * width() * height()];
 
     bool mouseButtonInputEvent(int, int, int) override;
     bool mouseMoveEvent(double, double) override;
@@ -510,8 +510,8 @@ namespace cg
 
     // Convert to FreeImage format & save to file
     FIBITMAP* image = FreeImage_ConvertFromRawBits(_pixels, w, h, 3 * w, 24, 0x0000FF, 0xFF0000, 0x00FF00, false);
-    auto filename = ((PATH / "frame_").string() + std::to_string(frame) + ".bmp");
-    FreeImage_Save(FIF_BMP, image, filename.c_str(), 0);
+    auto filename = ((PATH / "frame_").string() + std::to_string(frame) + ".png");
+    FreeImage_Save(FIF_PNG, image, filename.c_str(), 0);
 
     // Free resources
     FreeImage_Unload(image);
@@ -584,8 +584,6 @@ namespace cg
     if (!_paused)
     {
       _solver->advanceFrame(_frame++);
-      if(_saveFrames)
-        saveFrame(_frame.index);
     }
 
     _program.use();
@@ -634,6 +632,9 @@ namespace cg
     //glDrawArrays(GL_POINTS, 0, size.x * size.y);
     glDrawElements(GL_TRIANGLES, 6* size.x * size.y, GL_UNSIGNED_INT, 0);
     
+    if (_saveFrames)
+      saveFrame(_frame.index);
+
     if (_drawGrid)
       drawGrid();
     if (_drawVectors)
